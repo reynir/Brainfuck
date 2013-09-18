@@ -42,6 +42,15 @@ Inductive EqBf :
       EqState s s' ->
       EqBf (c, s) (c', s').
 
+Ltac bf_reflexivity :=
+  simpl;
+  match goal with
+    | [ |- EqBf (?c, ?s) (?c', ?s') ] =>
+      apply eqbf; [
+          try reflexivity |
+          try state_reflexivity ]
+  end.
+
 Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
 Open Scope stateeq_scope.
 Notation "c ≡ c'" := (EqBf c c') (at level 70, no associativity) : bfeq_scope.
@@ -68,7 +77,21 @@ Proof.
   inversion IHn; subst; assumption.
 Qed.
 
+Lemma about_zeroes' : forall n c,
+                        (c, init (n_unfolded_zeroes n)) ≡ (c, init zeroes).
+Proof.
+  intros.
+  bf_reflexivity.
+  apply about_zeroes.
+Qed.
 
+Lemma very_simple_equivalence : forall c,
+                                  (c, init zeroes) ≡ (c, init zeroes).
+Proof.
+  intros.
+  unfold init.
+  bf_reflexivity.
+Qed.
 
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
 | iter_idem : forall conf : (Instr.instruction * state), iter conf conf
