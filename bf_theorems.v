@@ -252,10 +252,10 @@ Ltac bf_step :=
     | [ |- iter (- ?C, state[?ls, S ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, stdout]));
         [bf_reflexivity|]
-    | [ |- iter (i ?C, state[?ls, _, ?rs, ?stdin, ?stdout]) _] =>
+    | [ |- iter (← ?C, state[?ls, _, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, hd stdin, rs, tl stdin, stdout]));
         [bf_reflexivity|]
-    | [ |- iter (o ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
+    | [ |- iter (→ ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, curr :: stdout]));
         [bf_reflexivity|]
     | [ |- iter ([ ?b ] ?C, state[?ls, S ?n, ?rs, ?stdin, ?stdout]) _ ] =>
@@ -305,7 +305,7 @@ Proof.
 Qed.
 
 Example input : forall ls n rs input stdin stdout c,
-                  iter (i c, state[ls, n, rs, Cons input stdin, stdout])
+                  iter (← c, state[ls, n, rs, Cons input stdin, stdout])
                        (c, state[ls, input, rs, stdin, stdout]).
 Proof.
   intros.
@@ -313,7 +313,7 @@ Proof.
 Qed.
 
 Example input' : forall ls n rs stdin stdout c,
-                   iter (i c, state[ls, n, rs, stdin, stdout])
+                   iter (← c, state[ls, n, rs, stdin, stdout])
                         (c, state[ls, hd stdin, rs, tl stdin, stdout]).
 Proof.
   intros.
@@ -322,7 +322,7 @@ Proof.
 Qed.
 
 Example output : forall ls n rs stdin stdout c,
-                   iter (o c, state[ls, n, rs, stdin, stdout])
+                   iter (→ c, state[ls, n, rs, stdin, stdout])
                         (c, state[ls, n, rs, stdin, n :: stdout]).
 Proof.
   intros.
@@ -359,9 +359,9 @@ Abort.
 
 Definition hello_world := 
   + + + + + + + + + + [ > + + + + + + + > + + + + + + + + + + > + + +
-  > + < < < < - END ] > + + o > + o + + + + + + + o o + + + o > + + o
-  < < + + + + + + + + + + + + + + + o > o + + + o - - - - - - o - - -
-  - - - - - o > + o > o END.
+  > + < < < < - END ] > + + → > + → + + + + + + + → → + + + → > + + →
+  < < + + + + + + + + + + + + + + + → > → + + + → - - - - - - → - - -
+  - - - - - → > + → > → END.
 
 Open Scope list_scope. (* wut *)
 Definition hello_world_string := 10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil.

@@ -1,3 +1,5 @@
+(* -*- eval: (set-input-method "TeX"); -*- *)
+
 Require Import Lists.Streams.
 
 (**** A brainfuck variant ****
@@ -91,15 +93,15 @@ Notation "+ x" := (Instr.add x) (at level 35, right associativity) : bf_scope.
 Notation "- x" := (Instr.subtract x) (at level 35, right associativity) : bf_scope.
 Notation "> x" := (Instr.stepRight x) (at level 35, right associativity) : bf_scope.
 Notation "< x" := (Instr.stepLeft x) (at level 35, right associativity) : bf_scope.
-Notation "'i' x" := (Instr.input x) (at level 35, right associativity) : bf_scope.
-Notation "'o' x" := (Instr.output x) (at level 35, right associativity) : bf_scope.
+Notation "'←' x" := (Instr.input x) (at level 35, right associativity) : bf_scope.
+Notation "'→' x" := (Instr.output x) (at level 35, right associativity) : bf_scope.
 Notation "[ b ] x" := (Instr.loop b x) (at level 35, right associativity) : bf_scope.
 Notation "'END'" := Instr.EOF : bf_scope.
 
 Open Scope bf_scope.
 
 Unset Printing Notations.
-Compute i [ > + + < - END] o END.
+Compute ← [ > + + < - END] → END.
 Compute [[+END]END]END.
 Set Printing Notations.
 
@@ -109,8 +111,8 @@ Fixpoint sequence (c c' : Instr.instruction) : Instr.instruction :=
     | - c => - (sequence c c')
     | > c => > (sequence c c')
     | < c => < (sequence c c')
-    | i c => i (sequence c c')
-    | o c => o (sequence c c')
+    | ← c => ← (sequence c c')
+    | → c => → (sequence c c')
     | [ b ] c => [ b ] (sequence c c')
     | END => c'
   end.
@@ -121,8 +123,8 @@ Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction *
     | (- c, m) => Some (c, decrement m)
     | (> c, m) => Some (c, stepRight m)
     | (< c, m) => Some (c, stepLeft m)
-    | (i c, m) => Some (c, input m)
-    | (o c, m) => Some (c, output m)
+    | (← c, m) => Some (c, input m)
+    | (→ c, m) => Some (c, output m)
     | ([ b ] c, m) =>
       Some (if isZero m
            then (c, m)
@@ -130,7 +132,7 @@ Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction *
     | (END, m) => None
   end.
 
-Compute step (i [ > + < - END] o END, init zeroes).
+Compute step (← [ > + < - END] → END, init zeroes).
 Compute step ([+END]END, init zeroes).
 Compute step ([+END]END, increment (init zeroes)).
 Compute option_map step (step ([+END]END, increment (init zeroes))).
