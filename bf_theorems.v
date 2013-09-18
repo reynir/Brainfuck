@@ -117,7 +117,7 @@ Qed.
 
 (* Basically an evaluation function *)
 
-Ltac do_step :=
+Ltac bf_step :=
   simpl;
   match goal with
     | [ |- iter ?C ?C] =>
