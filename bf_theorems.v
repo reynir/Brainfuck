@@ -205,7 +205,7 @@ Proof.
 Qed.
 
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
-| iter_idem : forall conf, iter conf conf
+| iter_idem : forall conf conf', conf ≡ conf' -> iter conf conf'
 | iter_step : forall conf conf' conf'',
                  match step conf with
                    | Some conf''' => conf''' ≡ conf'
@@ -227,6 +227,7 @@ Proof.
   bf_reflexivity.
   
   apply iter_idem.
+  bf_reflexivity.
 Qed.
 
 (* [bf_step] is basically an evaluation function / tactic. It *should*
@@ -236,7 +237,7 @@ Ltac bf_step :=
   simpl;
   match goal with
     | [ |- iter ?C ?C] =>
-      apply iter_idem
+      apply iter_idem; bf_reflexivity
     | [ |- iter (< ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[tl ls, hd ls, Cons curr rs, stdin, stdout]));
         [bf_reflexivity|]
