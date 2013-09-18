@@ -40,6 +40,39 @@ Ltac state_reflexivity :=
           try reflexivity ]
   end.
 
+Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
+Open Scope stateeq_scope.
+
+Lemma EqState_refl : forall s, s ≡ₛ s.
+Proof.
+  intro s; destruct s; state_reflexivity.
+Qed.
+
+Lemma EqState_trans : forall s s' s'',
+                        s ≡ₛ s' ->
+                        s' ≡ₛ s'' ->
+                        s ≡ₛ s''.
+Proof.
+  intros s s' s'' H H'.
+  destruct s as [ls curr rs stdin stdout];
+    destruct s' as [ls' curr' rs' stdin' stdout'];
+    destruct s'' as [ls'' curr'' rs'' stdin'' stdout''].
+  inversion H; inversion H'; subst.
+  state_reflexivity.
+  apply (@trans_EqSt _ ls ls' ls''); assumption.
+  apply (@trans_EqSt _ rs rs' rs''); assumption.
+  apply (@trans_EqSt _ stdin stdin' stdin''); assumption.
+Qed.       
+
+Lemma EqState_sym : forall s s',
+                      s ≡ₛ s' ->
+                      s' ≡ₛ s.
+Proof.
+  intros.
+  inversion H; subst.
+  state_reflexivity; apply sym_EqSt; assumption.
+Qed.
+
 (* [EqBf] is an equivalence relation between configurations. It
 requires the programs to be equal and the states to be equivalent
 w.r.t. [EqState]. *)
@@ -60,11 +93,39 @@ Ltac bf_reflexivity :=
           try state_reflexivity ]
   end.
 
-Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
-Open Scope stateeq_scope.
 Notation "c ≡ c'" := (EqBf c c') (at level 70, no associativity) : bfeq_scope.
 Open Scope bfeq_scope.
 
+Lemma EqBf_refl : forall config, config ≡ config.
+Proof.
+  intro config; destruct config; bf_reflexivity; apply EqState_refl.
+Qed.
+
+Lemma EqBf_trans : forall config config' config'',
+                     config ≡ config' ->
+                     config' ≡ config'' ->
+                     config ≡ config''.
+Proof.
+  intros conf conf' conf'' H H'.
+  destruct conf as [c s];
+    destruct conf' as [c' s'];
+    destruct conf'' as [c'' s''].
+  inversion H; subst; inversion H'; subst.
+  bf_reflexivity.
+  Check EqState_trans.
+  apply (EqState_trans s s' s''); assumption.
+Qed.  
+
+Lemma EqBf_sym : forall config config',
+                   config ≡ config' ->
+                   config' ≡ config.
+Proof.
+  intros conf conf' H.
+  inversion H; subst.
+  bf_reflexivity.
+  apply EqState_sym; assumption.
+Qed.
+  
 Fixpoint n_unfolded_zeroes (n : nat) : Stream nat :=
   match n with
     | 0 => zeroes
