@@ -94,11 +94,14 @@ Proof.
 Qed.
 
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
-| iter_idem : forall conf : (Instr.instruction * state), iter conf conf
-| iter_step : forall conf conf' conf'' : (Instr.instruction * state),
-                step conf = Some conf' ->
-                iter conf' conf'' ->
-                iter conf conf''.
+| iter_idem : forall conf, iter conf conf
+| iter_step : forall conf conf' conf'',
+                 match step conf with
+                   | Some conf''' => conf''' ≡ conf'
+                   | None => False
+                 end ->
+                 iter conf' conf'' ->
+                 iter conf conf''.
 
 Open Scope state_scope.
 
@@ -107,10 +110,10 @@ Proof.
   intros.
   destruct m as [[l ls] curr rs stdin stdout].
   apply (iter_step _ (> c, (state[ ls, l, Cons curr rs, stdin, stdout ])) _).
-  reflexivity.
+  bf_reflexivity.
   
   apply (iter_step _ (c, (state[ Cons l ls, curr, rs, stdin, stdout ])) _).
-  reflexivity.
+  bf_reflexivity.
   
   apply iter_idem.
 Qed.
@@ -124,31 +127,31 @@ Ltac bf_step :=
       apply iter_idem
     | [ |- iter (< ?C, state[Cons ?l ?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, l, Cons curr rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (> ?C, state[?ls, ?curr, Cons ?r ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[Cons curr ls, r, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (+ ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, S curr, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (- ?C, state[?ls, 0, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, 0, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (- ?C, state[?ls, S ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (i ?C, state[?ls, _, ?rs, Cons ?input ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, input, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter (o ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, curr :: stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter ([ ?b ] ?C, state[?ls, S ?n, ?rs, ?stdin, ?stdout]) _ ] =>
       apply (iter_step _ (sequence b ([ b ]C), state[ls, S n, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
     | [ |- iter ([ ?b ] ?C, state[?ls, 0, ?rs, ?stdin, ?stdout]) _ ] =>
       apply (iter_step _ (C, state[ls, 0, rs, stdin, stdout]));
-        [reflexivity|]
+        [bf_reflexivity|]
   end.
 
 Ltac bf_destruct :=
