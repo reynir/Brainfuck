@@ -47,6 +47,29 @@ Open Scope stateeq_scope.
 Notation "c ≡ c'" := (EqBf c c') (at level 70, no associativity) : bfeq_scope.
 Open Scope bfeq_scope.
 
+Fixpoint n_unfolded_zeroes (n : nat) : Stream nat :=
+  match n with
+    | 0 => zeroes
+    | S n => Cons 0 (n_unfolded_zeroes n)
+  end.
+
+Lemma about_zeroes : forall n,
+                       init (n_unfolded_zeroes n) ≡ₛ init zeroes.
+Proof.
+  induction n.
+  unfold init.
+  state_reflexivity.
+  
+  unfold init.
+  state_reflexivity.
+  apply eqst.
+  reflexivity.
+  simpl.
+  inversion IHn; subst; assumption.
+Qed.
+
+
+
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
 | iter_idem : forall conf : (Instr.instruction * state), iter conf conf
 | iter_step : forall conf conf' conf'' : (Instr.instruction * state),
