@@ -175,7 +175,7 @@ Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> P
 
 Open Scope state_scope.
 
-Theorem left_right : forall m c,  iter (< > c, m) (c, m).
+Example left_right : forall m c,  iter (< > c, m) (c, m).
 Proof.
   intros.
   destruct m as [[l ls] curr rs stdin stdout].
@@ -239,21 +239,21 @@ Ltac bf_destruct :=
 (* The following is a series of proofs whose purpose is mainly to test
 the various tactics. *)
 Module BF_Automation_Tests.
-Theorem left_right' : forall m c,  iter (< > c, m) (c, m).
+Example left_right' : forall m c,  iter (< > c, m) (c, m).
 Proof.
   intros.
   bf_destruct.
   repeat bf_step.
 Qed.
 
-Theorem plus_minus : forall m c, iter (+ - c, m) (c, m).
+Example plus_minus : forall m c, iter (+ - c, m) (c, m).
 Proof.
   intros.
   bf_destruct.
   repeat bf_step.
 Qed.
 
-Theorem minus_minus : forall ls n rs stdin stdout c,
+Example minus_minus : forall ls n rs stdin stdout c,
                         iter (- c, state[ls, n, rs, stdin, stdout])
                              (c, state[ls, minus n 1, rs, stdin, stdout]).
 Proof.
@@ -263,7 +263,7 @@ Proof.
   bf_step.
 Qed.
 
-Theorem input : forall ls n rs input stdin stdout c,
+Example input : forall ls n rs input stdin stdout c,
                   iter (i c, state[ls, n, rs, Cons input stdin, stdout])
                        (c, state[ls, input, rs, stdin, stdout]).
 Proof.
@@ -271,7 +271,7 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem input' : forall ls n rs stdin stdout c,
+Example input' : forall ls n rs stdin stdout c,
                    iter (i c, state[ls, n, rs, stdin, stdout])
                         (c, state[ls, hd stdin, rs, tl stdin, stdout]).
 Proof.
@@ -280,7 +280,7 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem output : forall ls n rs stdin stdout c,
+Example output : forall ls n rs stdin stdout c,
                    iter (o c, state[ls, n, rs, stdin, stdout])
                         (c, state[ls, n, rs, stdin, n :: stdout]).
 Proof.
@@ -288,7 +288,7 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem loop : forall ls rs stdin stdout c,
+Example loop : forall ls rs stdin stdout c,
                  iter ([-END] c, state[ls, 5, rs, stdin, stdout])
                       (c, state[ls, 0, rs, stdin, stdout]).
 Proof.
@@ -296,7 +296,7 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem nonloop : forall ls rs stdin stdout b c,
+Example nonloop : forall ls rs stdin stdout b c,
                     iter ([b]c, state[ls, 0, rs, stdin, stdout])
                          (c, state[ls, 0, rs, stdin, stdout]).
 Proof.
@@ -304,7 +304,7 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem non_termination : forall ls rs stdin stdout c,
+Example non_termination : forall ls rs stdin stdout c,
                            iter ([END]c, state[ls, 1, rs, stdin, stdout])
                                 (c, state[ls, 1, rs, stdin, stdout]).
 Proof.
@@ -325,7 +325,7 @@ Definition hello_world :=
 Open Scope list_scope. (* wut *)
 Definition hello_world_string := 10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil.
 
-Theorem hello_world_works :
+Example hello_world_works :
   exists ls n rs,
   iter (hello_world, state[zeroes, 0, zeroes, zeroes, nil])
        (END, state[
