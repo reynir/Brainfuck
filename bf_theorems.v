@@ -21,6 +21,19 @@ Inductive EqState : state -> state -> Prop :=
       EqState state[ls, curr, rs, stdin, stdout]
               state[ls', curr', rs', stdin', stdout'].
 
+Ltac state_reflexivity :=
+  simpl;
+  match goal with
+    | [ |- EqState state[?ls, ?curr, ?rs, ?stdin, ?stdout]
+                   state[?ls', ?curr', ?rs', ?stdin', ?stdout'] ] =>
+      apply eqstate; [
+          try apply EqSt_reflex |
+          try reflexivity |
+          try apply EqSt_reflex |
+          try apply EqSt_reflex |
+          try reflexivity ]
+  end.
+
 Inductive EqBf :
   Instr.instruction * state -> Instr.instruction * state -> Prop :=
 | eqbf :
