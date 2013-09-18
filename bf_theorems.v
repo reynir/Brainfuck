@@ -10,6 +10,9 @@ Definition option_bind {A B : Set} (f : A -> option B) (x : option A) : option B
     | Some a => f a
   end.
 
+(* [EqState] is an equivalence relation between machine states. The
+key difference from [_ = _] is that the [Stream] components of the two
+[state]s are compared with [EqSt] (i.e. extensional equality). *)
 Inductive EqState : state -> state -> Prop :=
 | eqstate :
     forall ls curr rs stdin stdout ls' curr' rs' stdin' stdout',
@@ -21,6 +24,9 @@ Inductive EqState : state -> state -> Prop :=
       EqState state[ls, curr, rs, stdin, stdout]
               state[ls', curr', rs', stdin', stdout'].
 
+(* [state_reflexivity] can automatically solve the most trivial goals
+of the form [EqState _ _], and will give suitable subgoals
+otherwise. *)
 Ltac state_reflexivity :=
   simpl;
   match goal with
@@ -34,6 +40,9 @@ Ltac state_reflexivity :=
           try reflexivity ]
   end.
 
+(* [EqBf] is an equivalence relation between configurations. It
+requires the programs to be equal and the states to be equivalent
+w.r.t. [EqState]. *)
 Inductive EqBf :
   Instr.instruction * state -> Instr.instruction * state -> Prop :=
 | eqbf :
@@ -118,8 +127,9 @@ Proof.
   apply iter_idem.
 Qed.
 
-(* Basically an evaluation function *)
-
+(* [bf_step] is basically an evaluation function / tactic. It *should*
+always be able to prove a step on concrete configurations. It also
+also works fairly well on abstract values. *)
 Ltac bf_step :=
   simpl;
   match goal with
@@ -165,6 +175,8 @@ Ltac bf_destruct :=
       destruct M as [?ls ?curr ?rs ?stdin ?stdout]
   end.
 
+(* The following is a series of proofs whose purpose is mainly to test
+the various tactics. *)
 Module BF_Automation_Tests.
 Theorem left_right' : forall m c,  iter (< > c, m) (c, m).
 Proof.
@@ -231,6 +243,7 @@ Proof.
   change the goal *)
 
   repeat bf_step.
+  (* Apparently [repeat] checks whether there's any progress *)
 Abort.
 
 Definition hello_world := 
@@ -252,8 +265,7 @@ Theorem hello_world_works :
                  zeroes,
                  hello_world_string]).
 Proof.
-  (* Unfortunately, we have to guess the state of the resulting
-  stack. *)
+  (* Unfortunately, we have to guess the state of the resulting cells *)
   exists (Cons 33 (Cons 100 (Cons 87 (Cons 0 zeroes)))).
   exists 10.
   exists zeroes.
