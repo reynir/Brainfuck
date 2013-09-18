@@ -105,11 +105,11 @@ Proof.
   apply (@trans_EqSt _ stdin stdin' stdin''); assumption.
 Qed.       
 
-Lemma EqState_sym : forall s s',
+Lemma EqState_sym {s s' : state} :
                       s ≡ₛ s' ->
                       s' ≡ₛ s.
 Proof.
-  intros.
+  intro H.
   inversion H; subst.
   state_reflexivity; apply sym_EqSt; assumption.
 Qed.
@@ -157,11 +157,11 @@ Proof.
   apply (EqState_trans s s' s''); assumption.
 Qed.  
 
-Lemma EqBf_sym : forall config config',
-                   config ≡ config' ->
-                   config' ≡ config.
+Lemma EqBf_sym {conf conf'} :
+                   conf ≡ conf' ->
+                   conf' ≡ conf.
 Proof.
-  intros conf conf' H.
+  intros H.
   inversion H; subst.
   bf_reflexivity.
   apply EqState_sym; assumption.
