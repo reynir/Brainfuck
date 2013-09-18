@@ -238,12 +238,9 @@ Definition hello_world :=
 Open Scope list_scope. (* wut *)
 Definition hello_world_string := 10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil.
 
-Definition eight_unfolded_zeroes :=
-Cons 0 (Cons 0 (Cons 0 (Cons 0 (Cons 0 (Cons 0 (Cons 0 (Cons 0 zeroes))))))).
-
 Theorem hello_world_works :
   exists ls n rs,
-  iter (hello_world, state[zeroes, 0, eight_unfolded_zeroes, zeroes, nil])
+  iter (hello_world, state[zeroes, 0, n_unfolded_zeroes 4, zeroes, nil])
        (END, state[
                  ls,
                  n,
@@ -255,15 +252,12 @@ Proof.
   stack. *)
   exists (Cons 33 (Cons 100 (Cons 87 (Cons 0 zeroes)))).
   exists 10.
-  exists (Cons 0 (Cons 0 (Cons 0 (Cons 0 (cofix zeroes : Stream nat := Cons 0 zeroes))))).
+  exists zeroes.
   unfold  hello_world.
   unfold init.
-  unfold eight_unfolded_zeroes.
+  unfold n_unfolded_zeroes.
   unfold hello_world_string.
-  
   repeat bf_step.
-  fold zeroes.
-  apply iter_idem.
 Qed.
 
 End BF_Automation_Tests.
