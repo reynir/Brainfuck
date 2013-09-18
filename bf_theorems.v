@@ -68,7 +68,7 @@ Ltac do_step :=
         [reflexivity|]
   end.
 
-Ltac do_destruct :=
+Ltac bf_destruct :=
   simpl;
   match goal with
     | [ |- iter (< ?C, ?M) _] =>
@@ -84,13 +84,13 @@ Module BF_Automation_Tests.
 Theorem left_right' : forall m c,  iter (< > c, m) (c, m).
 Proof.
   intros.
-  repeat (do_step || do_destruct).
+  repeat (bf_step || bf_destruct).
 Qed.
 
 Theorem plus_minus : forall m c, iter (+ - c, m) (c, m).
 Proof.
   intros.
-  repeat (do_step || do_destruct).
+  repeat (bf_step || bf_destruct).
 Qed.
 
 Theorem minus_minus : forall ls n rs stdin stdout c,
@@ -98,9 +98,9 @@ Theorem minus_minus : forall ls n rs stdin stdout c,
                              (c, state[ls, minus n 1, rs, stdin, stdout]).
 Proof.
   intros.
-  destruct n; repeat do_step.
+  destruct n; repeat bf_step.
   rewrite <- minus_n_O.
-  do_step.
+  bf_step.
 Qed.
 
 Theorem input : forall ls n rs input stdin stdout c,
@@ -108,7 +108,7 @@ Theorem input : forall ls n rs input stdin stdout c,
                        (c, state[ls, input, rs, stdin, stdout]).
 Proof.
   intros.
-  repeat do_step.
+  repeat bf_step.
 Qed.
 
 Theorem output : forall ls n rs stdin stdout c,
@@ -116,7 +116,7 @@ Theorem output : forall ls n rs stdin stdout c,
                         (c, state[ls, n, rs, stdin, n :: stdout]).
 Proof.
   intros.
-  repeat do_step.
+  repeat bf_step.
 Qed.
 
 Theorem loop : forall ls rs stdin stdout c,
@@ -124,7 +124,7 @@ Theorem loop : forall ls rs stdin stdout c,
                       (c, state[ls, 0, rs, stdin, stdout]).
 Proof.
   intros.
-  repeat do_step.
+  repeat bf_step.
 Qed.
 
 Theorem nonloop : forall ls rs stdin stdout b c,
@@ -132,7 +132,7 @@ Theorem nonloop : forall ls rs stdin stdout b c,
                          (c, state[ls, 0, rs, stdin, stdout]).
 Proof.
   intros.
-  repeat do_step.
+  repeat bf_step.
 Qed.
 
 Theorem non_termination : forall ls rs stdin stdout c,
@@ -143,7 +143,7 @@ Proof.
   (* For some reason this does terminate (although it doesn't really
   change the goal *)
 
-  repeat do_step.
+  repeat bf_step.
 Abort.
 
 Definition hello_world := 
@@ -178,7 +178,7 @@ Proof.
   unfold eight_unfolded_zeroes.
   unfold hello_world_string.
   
-  repeat do_step.
+  repeat bf_step.
   fold zeroes.
   apply iter_idem.
 Qed.
