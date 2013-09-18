@@ -10,6 +10,47 @@ Definition option_bind {A B : Set} (f : A -> option B) (x : option A) : option B
     | Some a => f a
   end.
 
+Lemma step_None : forall c m,
+                    step (c, m) = None <->
+                    c = END.
+Proof.
+  intros c m.
+  split.
+  intro H; destruct c; simpl in H; try discriminate H.
+  reflexivity.
+
+  intros; subst; reflexivity.
+Qed.
+
+Lemma step_Some : forall c m,
+                  (exists config, step (c, m) = Some config) <->
+                  c <> END.
+Proof.
+  intros c m.
+  split.
+  intro H.
+  destruct H.
+  destruct c; try (intro H'; discriminate H').
+  intro H'.
+  apply (proj2 (step_None END m)) in H'.
+  rewrite H' in H.
+  discriminate H.
+
+  intro H.
+  destruct c; simpl.
+
+  exists (c, increment m); reflexivity.
+  exists (c, decrement m); reflexivity.
+  exists (c, stepRight m); reflexivity.
+  exists (c, stepLeft m); reflexivity.
+  exists (c, input m); reflexivity.
+  exists (c, output m); reflexivity.
+  exists (if isZero m
+          then (c2, m)
+          else ((sequence c1 ([c1]c2)), m)); reflexivity.
+  destruct H; reflexivity.
+Qed.
+
 (* [EqState] is an equivalence relation between machine states. The
 key difference from [_ = _] is that the [Stream] components of the two
 [state]s are compared with [EqSt] (i.e. extensional equality). *)

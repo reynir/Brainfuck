@@ -124,9 +124,9 @@ Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction *
     | (i c, m) => Some (c, input m)
     | (o c, m) => Some (c, output m)
     | ([ b ] c, m) =>
-      if isZero m
-      then Some (c, m)
-      else Some (sequence b ([ b ] c), m)
+      Some (if isZero m
+           then (c, m)
+           else (sequence b ([ b ] c), m))
     | (END, m) => None
   end.
 
