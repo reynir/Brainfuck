@@ -210,6 +210,15 @@ Proof.
   repeat bf_step.
 Qed.
 
+Theorem input' : forall ls n rs stdin stdout c,
+                   iter (i c, state[ls, n, rs, stdin, stdout])
+                        (c, state[ls, hd stdin, rs, tl stdin, stdout]).
+Proof.
+  intros.
+  destruct stdin as [input stdin].
+  repeat bf_step.
+Qed.
+
 Theorem output : forall ls n rs stdin stdout c,
                    iter (o c, state[ls, n, rs, stdin, stdout])
                         (c, state[ls, n, rs, stdin, n :: stdout]).
@@ -274,6 +283,18 @@ Proof.
   unfold n_unfolded_zeroes.
   unfold hello_world_string.
   repeat bf_step.
+Qed.
+
+Theorem reset_current_cell : forall ls curr rs stdin stdout c,
+                               iter ([-END]c, state[ls, curr, rs, stdin, stdout])
+                                    (c, state[ls, 0, rs, stdin, stdout]).
+Proof.
+  intros.
+  induction curr.
+  repeat bf_step.
+
+  repeat bf_step.
+  exact IHcurr.
 Qed.
 
 End BF_Automation_Tests.
