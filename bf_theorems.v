@@ -1,3 +1,5 @@
+(* -*- eval: (set-input-method "TeX"); -*- *)
+
 Require Import bf.
 Require Import Lists.Streams.
 Require Import Arith.Minus.
@@ -8,7 +10,29 @@ Definition option_bind {A B : Set} (f : A -> option B) (x : option A) : option B
     | Some a => f a
   end.
 
-Definition conf := (Instr.instruction, state).
+Inductive EqState : state -> state -> Prop :=
+| eqstate :
+    forall ls curr rs stdin stdout ls' curr' rs' stdin' stdout',
+      EqSt ls ls' ->
+      curr = curr' ->
+      EqSt rs rs' ->
+      EqSt stdin stdin' ->
+      stdout = stdout' ->
+      EqState state[ls, curr, rs, stdin, stdout]
+              state[ls', curr', rs', stdin', stdout'].
+
+Inductive EqBf :
+  Instr.instruction * state -> Instr.instruction * state -> Prop :=
+| eqbf :
+    forall c s c' s',
+      c = c' ->
+      EqState s s' ->
+      EqBf (c, s) (c', s').
+
+Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
+Open Scope stateeq_scope.
+Notation "c ≡ c'" := (EqBf c c') (at level 70, no associativity) : bfeq_scope.
+Open Scope bfeq_scope.
 
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
 | iter_idem : forall conf : (Instr.instruction * state), iter conf conf
