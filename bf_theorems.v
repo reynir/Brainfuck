@@ -125,11 +125,11 @@ Ltac bf_step :=
   match goal with
     | [ |- iter ?C ?C] =>
       apply iter_idem
-    | [ |- iter (< ?C, state[Cons ?l ?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, l, Cons curr rs, stdin, stdout]));
+    | [ |- iter (< ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
+      apply (iter_step _ (C, state[tl ls, hd ls, Cons curr rs, stdin, stdout]));
         [bf_reflexivity|]
-    | [ |- iter (> ?C, state[?ls, ?curr, Cons ?r ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[Cons curr ls, r, rs, stdin, stdout]));
+    | [ |- iter (> ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
+      apply (iter_step _ (C, state[Cons curr ls, hd rs, tl rs, stdin, stdout]));
         [bf_reflexivity|]
     | [ |- iter (+ ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, S curr, rs, stdin, stdout]));
@@ -140,8 +140,8 @@ Ltac bf_step :=
     | [ |- iter (- ?C, state[?ls, S ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, stdout]));
         [bf_reflexivity|]
-    | [ |- iter (i ?C, state[?ls, _, ?rs, Cons ?input ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, input, rs, stdin, stdout]));
+    | [ |- iter (i ?C, state[?ls, _, ?rs, ?stdin, ?stdout]) _] =>
+      apply (iter_step _ (C, state[ls, hd stdin, rs, tl stdin, stdout]));
         [bf_reflexivity|]
     | [ |- iter (o ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
       apply (iter_step _ (C, state[ls, curr, rs, stdin, curr :: stdout]));
@@ -164,19 +164,20 @@ Ltac bf_destruct :=
     | [ |- iter (+ ?C, ?M) _] =>
       destruct M as [?ls ?curr ?rs ?stdin ?stdout]
   end.
-      
 
 Module BF_Automation_Tests.
 Theorem left_right' : forall m c,  iter (< > c, m) (c, m).
 Proof.
   intros.
-  repeat (bf_step || bf_destruct).
+  bf_destruct.
+  repeat bf_step.
 Qed.
 
 Theorem plus_minus : forall m c, iter (+ - c, m) (c, m).
 Proof.
   intros.
-  repeat (bf_step || bf_destruct).
+  bf_destruct.
+  repeat bf_step.
 Qed.
 
 Theorem minus_minus : forall ls n rs stdin stdout c,
@@ -243,7 +244,7 @@ Definition hello_world_string := 10 :: 33::100::108::114::111::87::32::111::108:
 
 Theorem hello_world_works :
   exists ls n rs,
-  iter (hello_world, state[zeroes, 0, n_unfolded_zeroes 4, zeroes, nil])
+  iter (hello_world, state[zeroes, 0, zeroes, zeroes, nil])
        (END, state[
                  ls,
                  n,
