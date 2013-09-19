@@ -153,7 +153,6 @@ Proof.
     destruct conf'' as [c'' s''].
   inversion H; subst; inversion H'; subst.
   bf_reflexivity.
-  Check EqState_trans.
   apply (EqState_trans s s' s''); assumption.
 Qed.  
 
