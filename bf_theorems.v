@@ -213,7 +213,6 @@ Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> P
                  iter conf' conf'' ->
                  iter conf conf''.
 
-Open Scope state_scope.
 
 Example left_right : forall m c,  iter (< > c, m) (c, m).
 Proof.
@@ -472,8 +471,7 @@ Definition hello_world :=
   < < + + + + + + + + + + + + + + + → > → + + + → - - - - - - → - - -
   - - - - - → > + → > → END.
 
-Open Scope list_scope. (* wut *)
-Definition hello_world_string := 10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil.
+Definition hello_world_string := (10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil)%list.
 
 Example hello_world_works :
   exists ls n rs,
