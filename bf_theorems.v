@@ -549,4 +549,3 @@ Proof.
 Qed.
 
 End BF_Automation_Tests.
-p
