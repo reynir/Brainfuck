@@ -163,15 +163,13 @@ Lemma about_zeroes : forall n,
                        init (n_unfolded_zeroes n) ≡ₛ init zeroes.
 Proof.
   induction n.
-  unfold init.
-  state_reflexivity.
-  
+  apply EqState_refl.
+
   unfold init.
   state_reflexivity.
   apply eqst.
   reflexivity.
-  simpl.
-  inversion IHn; subst; assumption.
+  inversion IHn; assumption.
 Qed.
 
 Lemma about_zeroes' : forall n c,
@@ -471,7 +469,6 @@ Proof.
   exists zeroes.
   unfold  hello_world.
   unfold init.
-  unfold n_unfolded_zeroes.
   unfold hello_world_string.
   repeat bf_step.
 Qed.
