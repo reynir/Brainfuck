@@ -277,6 +277,95 @@ Ltac bf_destruct :=
       destruct M as [?ls ?curr ?rs ?stdin ?stdout]
   end.
 
+Lemma EqBf_increment :
+  forall s s',
+    s ≡ₛ s' -> increment s ≡ₛ increment s'.
+Proof.
+  intros.
+  destruct s, s'.
+  state_reflexivity; inversion H; auto.
+Qed.
+
+Lemma EqBf_decrement :
+  forall s s',
+    s ≡ₛ s' -> decrement s ≡ₛ decrement s'.
+Proof.
+  intros.
+  destruct s as [? []]; destruct s' as [? []];
+  state_reflexivity; inversion H; subst; auto; discriminate H11.
+Qed.
+
+Lemma EqBf_stepRight :
+  forall s s',
+    s ≡ₛ s' -> stepRight s ≡ₛ stepRight s'.
+Proof.
+  intros.
+  destruct s as [? ? []], s' as [? ? []].
+  state_reflexivity; inversion H; subst; auto using eqst; inversion H12; assumption.
+Qed.
+
+Lemma EqBf_stepLeft :
+  forall s s',
+    s ≡ₛ s' -> stepLeft s ≡ₛ stepLeft s'.
+Proof.
+  intros.
+  destruct s as [[]], s' as [[]].
+  state_reflexivity; inversion H; auto using eqst; subst;
+  inversion H6; assumption.
+Qed.
+
+Lemma EqBf_input :
+  forall s s',
+    s ≡ₛ s' -> input s ≡ₛ input s'.
+Proof.
+  intros.
+  destruct s as [? ? ? []], s' as [? ? ? []].
+  state_reflexivity; inversion H; auto; inversion H13; auto.
+Qed.
+
+Lemma EqBf_output :
+  forall s s',
+    s ≡ₛ s' -> output s ≡ₛ output s'.
+Proof.
+  intros.
+  destruct s, s'.
+  state_reflexivity; inversion H; subst; auto.
+Qed.
+
+Lemma step_EqBf_compat :
+  forall conf conf' conf'' conf''',
+    step conf = Some conf' ->
+    step conf'' = Some conf''' ->
+    conf ≡ conf'' ->
+    conf' ≡ conf'''.
+Proof.
+  (* HERE BE DRAGONS! *)
+  intros ? ? ? ? H H' ?.
+  destruct conf as [[]]; try discriminate H;
+  injection H; intros;
+  destruct conf'' as [[]];
+  try discriminate H';
+  injection H'; intros;
+  subst;
+  inversion H0; (injection H4 || discriminate H4); intros; subst;
+  try bf_reflexivity;
+  auto using EqBf_increment, EqBf_decrement, EqBf_stepRight,
+  EqBf_stepLeft, EqBf_input, EqBf_output.
+  inversion H6; subst; destruct curr'; simpl;
+  bf_reflexivity; assumption.
+Qed.
+
+Lemma iter_trans :
+  forall conf conf' conf'',
+    iter conf conf' ->
+    iter conf' conf'' ->
+    iter conf conf''.
+Proof.
+(* TODO: The proof.
+   I am struggling with proving this lemma, but I am very confident it
+   is provable. *)
+Admitted.
+
 (* The following is a series of proofs whose purpose is mainly to test
 the various tactics. *)
 Module BF_Automation_Tests.
