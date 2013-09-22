@@ -150,3 +150,33 @@ CoFixpoint run (configuration : Instr.instruction * state) : Trace :=
 
 Definition interpret (c : Instr.instruction) (stdin : Stream nat) :=
   run (c, init stdin).
+
+Inductive step_rel : Instr.instruction * state -> Instr.instruction * state -> Prop :=
+| step_increment : forall c s, step_rel (+ c, s) (c, increment s)
+| step_derement : forall c s, step_rel (- c, s) (c, decrement s)
+| step_right : forall c s, step_rel (> c, s) (c, stepRight s)
+| step_left : forall c s, step_rel (< c, s) (c, stepLeft s)
+| step_input : forall c s, step_rel (← c, s) (c, input s)
+| step_output : forall c s, step_rel (→ c, s) (c, output s)
+| step_loop : forall b c s,
+                step_rel ([b]c, s)
+                         (if isZero s then c else sequence b ([b]c), s).
+
+Theorem step_step_rel :
+  forall c c',
+    step c = Some c' <-> step_rel c c'.
+Proof.
+  split.
+  intro H.
+  destruct c.
+  induction i;
+  destruct s as [? []];
+  (simpl in H;
+  injection H; intro; subst;
+  constructor) || inversion H.
+
+  intro H.
+  induction H;
+  reflexivity
+    || (destruct s as [? []]; reflexivity).
+Qed.
