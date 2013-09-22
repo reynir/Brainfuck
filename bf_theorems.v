@@ -30,24 +30,11 @@ Proof.
   split.
   intro H.
   destruct H.
-  destruct c; try (intro H'; discriminate H').
-  intro H'.
-  apply (proj2 (step_None END m)) in H'.
-  rewrite H' in H.
-  discriminate H.
-
+  apply step_step_rel in H.
+  inversion H; intro Heq; discriminate Heq.
+  
   intro H.
-  destruct c; simpl.
-
-  exists (c, increment m); reflexivity.
-  exists (c, decrement m); reflexivity.
-  exists (c, stepRight m); reflexivity.
-  exists (c, stepLeft m); reflexivity.
-  exists (c, input m); reflexivity.
-  exists (c, output m); reflexivity.
-  exists (if isZero m
-          then (c2, m)
-          else ((sequence c1 ([c1]c2)), m)); reflexivity.
+  destruct c; simpl; eauto.
   destruct H; reflexivity.
 Qed.
 
@@ -206,10 +193,7 @@ Qed.
 Inductive iter : (Instr.instruction * state) -> (Instr.instruction * state) -> Prop :=
 | iter_idem : forall conf conf', conf ≡ conf' -> iter conf conf'
 | iter_step : forall conf conf' conf'',
-                 match step conf with
-                   | Some conf''' => conf''' ≡ conf'
-                   | None => False
-                 end ->
+                step_rel conf conf' ->
                  iter conf' conf'' ->
                  iter conf conf''.
 
@@ -219,10 +203,10 @@ Proof.
   intros.
   destruct m as [[l ls] curr rs stdin stdout].
   apply (iter_step _ (> c, (state[ ls, l, Cons curr rs, stdin, stdout ])) _).
-  bf_reflexivity.
+  constructor.
   
   apply (iter_step _ (c, (state[ Cons l ls, curr, rs, stdin, stdout ])) _).
-  bf_reflexivity.
+  constructor.
   
   apply iter_idem.
   bf_reflexivity.
@@ -236,33 +220,30 @@ Ltac bf_step :=
   match goal with
     | [ |- iter ?C ?C] =>
       apply iter_idem; bf_reflexivity
-    | [ |- iter (< ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[tl ls, hd ls, Cons curr rs, stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (> ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[Cons curr ls, hd rs, tl rs, stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (+ ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, S curr, rs, stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (- ?C, state[?ls, 0, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, 0, rs, stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (- ?C, state[?ls, S ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, curr, rs, stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (← ?C, state[?ls, _, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, hd stdin, rs, tl stdin, stdout]));
-        [bf_reflexivity|]
-    | [ |- iter (→ ?C, state[?ls, ?curr, ?rs, ?stdin, ?stdout]) _] =>
-      apply (iter_step _ (C, state[ls, curr, rs, stdin, curr :: stdout]));
-        [bf_reflexivity|]
+    | [ |- iter (< ?C, ?S) _] =>
+      apply (iter_step _ (C, stepLeft S));
+        [constructor|]
+    | [ |- iter (> ?C, ?S) _] =>
+      apply (iter_step _ (C, stepRight S));
+        [constructor|]
+    | [ |- iter (+ ?C, ?S) _] =>
+      apply (iter_step _ (C, increment S));
+        [constructor|]
+    | [ |- iter (- ?C, ?S) _] =>
+      apply (iter_step _ (C, decrement S));
+        [constructor|]
+    | [ |- iter (← ?C, ?S) _] =>
+      apply (iter_step _ (C, input S));
+        [constructor|]
+    | [ |- iter (→ ?C, ?S) _] =>
+      apply (iter_step _ (C, output S));
+        [constructor|]
     | [ |- iter ([ ?b ] ?C, state[?ls, S ?n, ?rs, ?stdin, ?stdout]) _ ] =>
       apply (iter_step _ (sequence b ([ b ]C), state[ls, S n, rs, stdin, stdout]));
-        [bf_reflexivity|]
+        [constructor|]
     | [ |- iter ([ ?b ] ?C, state[?ls, 0, ?rs, ?stdin, ?stdout]) _ ] =>
       apply (iter_step _ (C, state[ls, 0, rs, stdin, stdout]));
-        [bf_reflexivity|]
+        [constructor|]
   end.
 
 Ltac bf_destruct :=
@@ -328,7 +309,8 @@ Lemma EqBf_output :
 Proof.
   intros.
   destruct s, s'.
-  state_reflexivity; inversion H; subst; auto.
+  destruct H.
+  state_reflexivity; subst; auto.
 Qed.
 
 Lemma step_EqBf_compat :
