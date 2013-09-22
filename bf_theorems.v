@@ -2,7 +2,7 @@
 
 Require Import bf.
 Require Import Lists.Streams.
-Require Import Arith.Minus.
+Require Import Arith.Minus Arith.Plus.
 
 Definition option_bind {A B : Set} (f : A -> option B) (x : option A) : option B :=
   match x with
@@ -508,4 +508,45 @@ Proof.
   exact IHcurr.
 Qed.
 
+Lemma double_cell' : forall ls x y rs stdin stdout c,
+                        iter ([- > + + <END]c, state[ls, x, Cons y rs, stdin, stdout])
+                             (c, state[ls, 0, Cons (2*x + y) rs, stdin, stdout]).
+Proof.
+  intros ls x.
+  induction x.
+  intros.
+  repeat bf_step.
+
+  intros.
+  repeat bf_step.
+  simpl.
+  assert (S (x + S (x + 0) + y) = (2 * x) + S (S y)) as Hdouble.
+  rewrite <- plus_n_O.
+  rewrite <- plus_n_Sm.
+  rewrite plus_comm.
+  rewrite <- plus_Sn_m.
+  rewrite <- plus_n_Sm.
+  rewrite <- plus_n_Sm.
+  rewrite plus_comm.
+  assert (x+x = 2 * x).
+  simpl.
+  rewrite <- plus_n_O.
+  reflexivity.
+  rewrite H.
+  reflexivity.
+  rewrite Hdouble.
+  apply IHx.
+Qed.
+
+Theorem double_cell ls x :
+  forall rs stdin stdout c,
+    iter ([- > + + <END]c, state[ls, x, Cons 0 rs, stdin, stdout])
+         (c, state[ls, 0, Cons (2*x) rs, stdin, stdout]).
+Proof.
+  pose (double_cell' ls x 0) as H.
+  rewrite <- plus_n_O in H.
+  exact H.
+Qed.
+
 End BF_Automation_Tests.
+p
