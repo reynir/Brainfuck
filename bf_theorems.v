@@ -426,6 +426,26 @@ Proof.
   repeat bf_step.
 Qed.
 
+Example loop' : forall b,
+  (forall ls curr rs stdin stdout c,
+     iter (sequence b c, state[ls, curr, rs, stdin, stdout])
+          (c, state[ls, 0, rs, stdin, stdout])) ->
+  (forall ls curr rs stdin stdout c,
+     iter ([b] c, state[ls, curr, rs, stdin, stdout])
+          (c, state[ls, 0, rs, stdin, stdout])).
+Proof.
+  intros b.
+  intros.
+  destruct curr.
+  bf_step.
+  bf_step.
+
+  bf_step.
+  apply (iter_trans _ ([b]c, state[ls, 0, rs, stdin, stdout])).
+  apply H.
+  repeat bf_step.
+Qed.
+
 Example nonloop : forall ls rs stdin stdout b c,
                     iter ([b]c, state[ls, 0, rs, stdin, stdout])
                          (c, state[ls, 0, rs, stdin, stdout]).
