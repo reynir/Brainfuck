@@ -177,13 +177,98 @@ Proof.
   bf_reflexivity; assumption.
 Qed.
 
+Lemma step_rel_EqBf_compat :
+  forall c c' c'' c''',
+    step_rel c c' ->
+    step_rel c'' c''' ->
+    c ≡ c'' ->
+    c' ≡ c'''.
+Proof.
+  intros c c' c'' c''' H H'.
+  apply step_step_rel in H.
+  apply step_step_rel in H'.
+  apply step_EqBf_compat; assumption.
+Qed.
+
+Lemma step_square_lemma :
+  forall c c' c'',
+    step_rel c c' ->
+    c ≡ c'' ->
+    exists c''',
+      step_rel c'' c'''.
+Proof.
+  (* MORE DRAGONS AHEAD! *)
+  intros c c' c'' H.
+  apply step_step_rel in H.
+  destruct c as [[]];
+    try (destruct (step_Some END s);
+         destruct H0;
+         [ exists c'; assumption
+                | reflexivity ]);
+    try (intro H';
+    inversion H'; subst;
+    destruct s as [? []], s' as [? []];
+    match goal with
+        [ H : (_, _) ≡ ?c |- ?P ] =>
+        remember (step c) as my_c;
+        move Heqmy_c after H;
+        simpl in Heqmy_c;
+        match goal with
+            [ Heqmy_c : my_c = Some ?c |- ?P ] =>
+            exists c
+        end
+    end;
+    constructor).
+Qed.
+
+Lemma iter_injective :
+  forall c c' c'',
+    iter c c' ->
+    c' ≡ c'' ->
+    iter c c''.
+Proof.
+  intros c1 c2 c3 H H'.
+  induction H.
+  eauto using iter_idem, EqBf_trans.
+
+  apply IHiter in H'.
+  apply (iter_step _ conf'); assumption.
+Qed.
+
+Lemma extend_iter_right :
+  forall c c' c'',
+    iter c c' ->
+    step_rel c' c'' ->
+    iter c c''.
+Proof.
+  intros c c' c'' H.
+  induction H.
+  intro H'.
+
+  destruct (step_square_lemma conf' c'' conf H' (EqBf_sym H)).
+  apply EqBf_sym in H.
+  apply (step_rel_EqBf_compat conf' c'' conf x) in H; try assumption.
+  apply (iter_step _ _ _ H0).
+  apply iter_idem.
+  apply EqBf_sym.
+  assumption.
+
+  intro H'.
+  apply (iter_step _ _ _ H).
+  apply IHiter.
+  assumption.
+Qed.
+
 Lemma iter_trans :
   forall conf conf' conf'',
     iter conf conf' ->
     iter conf' conf'' ->
     iter conf conf''.
 Proof.
-(* TODO: The proof.
-   I am struggling with proving this lemma, but I am very confident it
-   is provable. *)
-Admitted.
+  intros c c' c'' H H'.
+  induction H'.
+
+  exact (iter_injective _ conf _ H H0).
+
+  exact (IHH' (extend_iter_right c conf conf' H H0)).
+Qed.
