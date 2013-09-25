@@ -173,3 +173,18 @@ Proof.
   bf_reflexivity.
   auto using eqst, EqSt_reflex.
 Qed.
+
+Definition reset := [-END]END.
+
+Theorem about_reset : forall ls curr rs stdin stdout,
+                               iter (reset, state[ls, curr, rs, stdin, stdout])
+                                    (END, state[ls, 0, rs, stdin, stdout]).
+Proof.
+  unfold reset.
+  intros.
+  induction curr.
+  repeat bf_step.
+
+  repeat bf_step.
+  exact IHcurr.
+Qed.

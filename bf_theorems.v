@@ -138,18 +138,6 @@ Proof.
   repeat bf_step.
 Qed.
 
-Theorem reset_current_cell : forall ls curr rs stdin stdout c,
-                               iter ([-END]c, state[ls, curr, rs, stdin, stdout])
-                                    (c, state[ls, 0, rs, stdin, stdout]).
-Proof.
-  intros.
-  induction curr.
-  repeat bf_step.
-
-  repeat bf_step.
-  exact IHcurr.
-Qed.
-
 Lemma double_cell' : forall ls x y rs stdin stdout c,
                         iter ([- > + + <END]c, state[ls, x, Cons y rs, stdin, stdout])
                              (c, state[ls, 0, Cons (2*x + y) rs, stdin, stdout]).
