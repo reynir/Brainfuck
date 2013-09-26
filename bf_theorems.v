@@ -72,7 +72,7 @@ Qed.
 
 Example loop' : forall b,
   (forall ls curr rs stdin stdout c,
-     iter (sequence b c, state[ls, curr, rs, stdin, stdout])
+     iter (b;c, state[ls, curr, rs, stdin, stdout])
           (c, state[ls, 0, rs, stdin, stdout])) ->
   (forall ls curr rs stdin stdout c,
      iter ([b] c, state[ls, curr, rs, stdin, stdout])

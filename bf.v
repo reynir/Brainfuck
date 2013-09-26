@@ -117,6 +117,8 @@ Fixpoint sequence (c c' : Instr.instruction) : Instr.instruction :=
     | END => c'
   end.
 
+Notation "c ';' c'" := (sequence c c') (at level 50, left associativity).
+
 Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction * state) :=
   match config with
     | (+ c, m) => Some (c, increment m)
@@ -128,7 +130,7 @@ Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction *
     | ([ b ] c, m) =>
       Some (if isZero m
            then (c, m)
-           else (sequence b ([ b ] c), m))
+           else (b;[b]c, m))
     | (END, m) => None
   end.
 
@@ -160,7 +162,7 @@ Inductive step_rel : Instr.instruction * state -> Instr.instruction * state -> P
 | step_output : forall c s, step_rel (→ c, s) (c, output s)
 | step_loop : forall b c s,
                 step_rel ([b]c, s)
-                         (if isZero s then c else sequence b ([b]c), s).
+                         (if isZero s then c else b;[b]c, s).
 
 Theorem step_step_rel :
   forall c c',
