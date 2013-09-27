@@ -263,7 +263,8 @@ Proof.
                        <END,
                        state[ls, x1, Cons x2 (Cons 0 zeroes), stdin, stdout])).
   bf_step.
-  apply Hmv2; clear Hmv2.
+  apply Hmv2.
+  clear Hmv2.
   rewrite <- plus_n_O.
   
   do 2 bf_step; simpl.
@@ -290,7 +291,68 @@ Proof.
             (c,
              state[Cons x2 (Cons (S i*x2+k) ls), x1, zeroes, stdin, stdout]))
     as Hstep.
-  admit.
+
+  intros.
+  bf_step; simpl.
+  assert
+    (forall x1 x2 k k' c,
+       iter ([< + > > > + < < -END]c,
+             state[Cons (k) ls, x2, Cons x1 (Cons k' zeroes), stdin, stdout])
+            (c, state[Cons (x2+k) ls, 0, Cons x1 (Cons (x2+k') zeroes), stdin, stdout]))
+    as Hsomething.
+  intros x x'.
+  induction x'.
+  intros.
+  repeat bf_step.
+  
+  intros.
+  repeat bf_step; simpl.
+  replace (S (x' + k')) with (x' + S k') by auto with arith.
+  replace (S (x' + k1)) with (x' + S k1) by auto with arith.
+  apply IHx'.
+
+  apply (iter_trans _
+                    (> >[< < + > > -END]< - c0,
+                     state[Cons (x3+(i*x3+k0)) ls, 0,
+                           Cons (S x0) (Cons (x3+0) zeroes), stdin, stdout])).
+  apply (iter_trans _
+                    ([< + > > > + < < - END]> > [< < + > > - END]< - c0,
+                     state[Cons (i * x3 + k0) ls, x3,
+                           Cons (S x0) (Cons 0 zeroes), stdin, stdout])).
+  bf_step.
+  apply (Hsomething (S x0) x3 (i*x3+k0) 0).
+  clear Hsomething.
+  do 2 bf_step; simpl.
+  apply (iter_trans
+           _ (< - c0,
+              state[Cons (S x0) (Cons x3 (Cons (x3+(i*x3+k0)) ls)),
+                    0, zeroes, stdin, stdout])).
+  rewrite plus_0_r.
+  assert
+    (forall k k',
+       iter
+         ([< < + > > - END]< - c0,
+          state[Cons (S x0) (Cons k (Cons (k' + (i * k' + k0)) ls)), 
+                x3, zeroes, stdin, stdout])
+         (< - c0,
+          state[Cons (S x0) (Cons (x3+k) (Cons (k' + (i * k' + k0)) ls)),
+                0, zeroes, stdin, stdout]))
+  as Hind.
+  induction x3.
+  intros.
+  repeat bf_step.
+
+  intros.
+  repeat bf_step; simpl.
+  replace (S (x3 + k1)) with (x3 + S k1) by auto with arith.
+  apply (IHx3 (S k1)).
+  rewrite <- (plus_0_r x3) at 4.
+  apply Hind.
+
+  repeat bf_step; simpl.
+  replace (x3 + (i * x3 + k0)) with (x3 + i * x3 + k0) by auto with arith.
+  repeat bf_step.
+
   apply (iter_trans
            _
            ([< [< + > > > + < < - END]> > [< < + > > - END]< - END]c,
