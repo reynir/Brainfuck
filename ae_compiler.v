@@ -1,4 +1,5 @@
 Require Import bf_stack bf bf_semantics.
+Require Import Lists.Streams.
 
 Inductive ae : Set :=
 | Int : nat -> ae
@@ -39,4 +40,51 @@ Proof.
   repeat bf_step.
 Qed.
 
-(* TODO: Correctness proof *)
+Theorem compiler_correctness :
+  forall ae ls x,
+    iter (compile ae, state[ls, x, zeroes, zeroes, nil])
+         (END, state[Cons x ls, interpret ae, zeroes, zeroes, nil]).
+Proof.
+  intro ae.
+  induction ae.
+  simpl.
+  intros.
+  apply (iter_trans _
+                    (END, state[Cons x ls, n, zeroes, zeroes, nil])).
+  apply (about_push n ls x zeroes nil).
+  bf_step.  
+
+  intros.
+  simpl.
+  apply (about_sequence (compile ae1) (compile ae2; add)
+                        _ state[Cons x ls, interpret ae1, zeroes, zeroes, nil]).
+  apply IHae1.  
+  apply (about_sequence (compile ae2) (add)
+                        _ state[Cons (interpret ae1) (Cons x ls),
+                                interpret ae2, zeroes, zeroes, nil]).
+  apply IHae2.
+  rewrite Arith.Plus.plus_comm.
+  apply about_add.
+
+  intros.
+  simpl.
+  apply (about_sequence (compile ae1) (compile ae2; sub)
+                        _ state[Cons x ls, interpret ae1, zeroes, zeroes, nil]).
+  apply IHae1.
+  apply (about_sequence (compile ae2) sub
+                        _ state[Cons (interpret ae1) (Cons x ls),
+                                interpret ae2, zeroes, zeroes, nil]).
+  apply IHae2.
+  apply about_sub.
+
+  intros.
+  simpl.
+  apply (about_sequence (compile ae1) (compile ae2; mult)
+                        _ state[Cons x ls, interpret ae1, zeroes, zeroes, nil]).
+  apply IHae1.
+  apply (about_sequence (compile ae2) mult
+                        _ state[Cons (interpret ae1) (Cons x ls),
+                                interpret ae2, zeroes, zeroes, nil]).
+  apply IHae2.
+  apply about_mult.
+Qed.
