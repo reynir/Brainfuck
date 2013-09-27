@@ -11,15 +11,14 @@ Coercion Int : nat >-> ae.
 Notation "a + b" := (Plus a b) : ae_scope.
 Notation "a - b" := (Minus a b) : ae_scope.
 Notation "a * b" := (Mult a b) : ae_scope.
-
-Open Scope ae_scope.
+Delimit Scope ae_scope with ae.
 
 Fixpoint interpret (ae : ae) : nat :=
   match ae with
     | Int n => n
-    | Plus e1 e2 => (interpret e1 + interpret e2)%nat
-    | Minus e1 e2 => (interpret e1 - interpret e2)%nat
-    | Mult e1 e2 => (interpret e1 * interpret e2)%nat
+    | Plus e1 e2 => interpret e1 + interpret e2
+    | Minus e1 e2 => interpret e1 - interpret e2
+    | Mult e1 e2 => interpret e1 * interpret e2
   end.
 
 Fixpoint compile (ae : ae) : Instr.instruction :=
@@ -31,7 +30,7 @@ Fixpoint compile (ae : ae) : Instr.instruction :=
   end.
 
 Example interpret_compile_example1 :
-  iter (compile (4+5-2*3), init zeroes)
+  iter (compile (4+5-2*3)%ae, init zeroes)
        (END, state[zeroes, interpret (4+5-2*3), zeroes, zeroes, nil]).
 Proof.
   unfold init, compile, interpret.

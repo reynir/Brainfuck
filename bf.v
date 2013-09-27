@@ -19,7 +19,7 @@ Inductive state : Set :=
 | configuration : Stream nat -> nat -> Stream nat -> Stream nat -> list nat -> state.
 
 Notation "'state[' left , current , right , stdin , stdout ]" := (configuration left current right stdin stdout) : state_scope.
-
+Delimit Scope state_scope with state.
 Open Scope state_scope.
 
 CoFixpoint zeroes : Stream nat :=
@@ -97,7 +97,7 @@ Notation "'←' x" := (Instr.input x) (at level 35, right associativity) : bf_sc
 Notation "'→' x" := (Instr.output x) (at level 35, right associativity) : bf_scope.
 Notation "[ b ] x" := (Instr.loop b x) (at level 35, right associativity) : bf_scope.
 Notation "'END'" := Instr.EOF : bf_scope.
-
+Delimit Scope bf_scope with bf.
 Open Scope bf_scope.
 
 Unset Printing Notations.

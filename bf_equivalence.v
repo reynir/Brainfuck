@@ -57,6 +57,7 @@ Ltac state_reflexivity :=
   end.
 
 Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
+Delimit Scope stateeq_scope with stateeq.
 Open Scope stateeq_scope.
 
 Lemma EqState_refl : forall s, s ≡ₛ s.
@@ -110,6 +111,7 @@ Ltac bf_reflexivity :=
   end.
 
 Notation "c ≡ c'" := (EqBf c c') (at level 70, no associativity) : bfeq_scope.
+Delimit Scope bfeq_scope with bfeq.
 Open Scope bfeq_scope.
 
 Lemma EqBf_refl : forall config, config ≡ config.
