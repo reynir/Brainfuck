@@ -1,7 +1,7 @@
 Require Import bf bf_equivalence bf_semantics.
 Require Import Lists.Streams.
 Require Import Setoid.
-Require Import Arith.Minus.
+Require Import Arith.
 
 Fixpoint add_n (n : nat) :=
   match n with
@@ -223,7 +223,107 @@ Example mult_example3 :
 Proof.
   unfold mult.
   intros.
+  repeat bf_step.
+Qed.
+
+Theorem about_mult :
+  forall ls x1 x2 stdin stdout,
+    iter (mult, state[Cons x1 ls, x2, zeroes, stdin, stdout])
+         (END, state[ls, x1 * x2, zeroes, stdin, stdout]).
+Proof.
+  unfold mult, reset.
+  intros.
   repeat bf_step; simpl.
-  apply iter_idem.
-  bf_reflexivity; auto using eqst, EqSt_reflex.
+  generalize dependent x1; generalize dependent x2.
+  assert
+    (forall x1 x2 k c,
+       iter ([> > + < < -END]c, state[ls, x1, Cons x2 (Cons k zeroes), stdin, stdout])
+            (c, state[ls, 0, Cons x2 (Cons (x1+k) zeroes), stdin, stdout]))
+    as Hmv2.
+  induction x1; intros.
+  repeat bf_step.
+  repeat bf_step; simpl.
+  rewrite plus_n_Sm.
+  apply IHx1.
+
+  intros.
+  apply (iter_trans _ (> > [<
+                            [< + > > > + < < -END]> >
+                            [< < + > > -END]
+                            < -END]
+                             < [-END]
+                             <END,
+                       state[ls, 0, Cons x2 (Cons (x1+0) zeroes), stdin, stdout])).
+  apply (iter_trans _ ([> > + < < -END]
+                       > > [<
+                            [< + > > > + < < -END]> >
+                            [< < + > > -END]
+                            < -END]
+                       < [-END]
+                       <END,
+                       state[ls, x1, Cons x2 (Cons 0 zeroes), stdin, stdout])).
+  bf_step.
+  apply Hmv2; clear Hmv2.
+  rewrite <- plus_n_O.
+  
+  do 2 bf_step; simpl.
+  generalize dependent x1; generalize dependent x2.
+  assert
+    (forall x1 x2 k c,
+       iter ([<
+              [< + > > > + < < -END]
+                > >
+                [< < + > > -END]
+                  < -END]c,
+             state[Cons x2 (Cons k ls), x1, zeroes, stdin, stdout])
+            (c, state[Cons x2 (Cons (x1 * x2 + k) ls), 0, zeroes, stdin, stdout]))
+    as H.
+  induction x1.
+  intros.
+  repeat bf_step.
+
+  intros; bf_step.
+  assert
+    (forall x1 x2 k i c,
+       iter (< [< + > > > + < < -END]> >[< < + > > -END]< -c,
+             state[Cons x2 (Cons (i*x2+k) ls), S x1, zeroes, stdin, stdout])
+            (c,
+             state[Cons x2 (Cons (S i*x2+k) ls), x1, zeroes, stdin, stdout]))
+    as Hstep.
+  admit.
+  apply (iter_trans
+           _
+           ([< [< + > > > + < < - END]> > [< < + > > - END]< - END]c,
+            state[Cons x2 (Cons (x2+k) ls), x1, zeroes, stdin, stdout])).
+  rewrite <- (plus_0_l k) at 1.
+  rewrite <- (mult_0_l x2) at 1.
+  rewrite <- (mult_1_l x2) at 4.
+  apply (Hstep x1 x2 k 0).
+  replace (x2 + x1*x2 + k) with (x1*x2+(x2+k)).
+  apply (IHx1 x2 (x2+k)).
+  rewrite (plus_comm x2 (x1*x2)).
+  rewrite plus_assoc.
+  reflexivity.
+
+  intros.
+  apply (iter_trans
+           _
+           (<[-END]<END, state[Cons x2 (Cons (x1*x2) ls), 0, zeroes, stdin, stdout])).
+  rewrite <- (plus_0_r (x1*x2)).
+  apply (H x1 x2 0).
+
+  repeat bf_step; simpl.
+
+  assert
+    (forall ls x rs stdin stdout c,
+        iter
+          ([-END]c, state[ls, x, rs, stdin, stdout])
+          (c, state[ls, 0, rs, stdin, stdout]))
+    as Hreset.
+  intros; induction x; repeat bf_step; apply IHx.
+  apply (iter_trans _ ([-END]< END, state[Cons (x1*x2) ls, x2, zeroes, stdin, stdout])).
+  bf_step.
+  apply (iter_trans _ (< END, state[Cons (x1*x2) ls, 0, zeroes, stdin, stdout])).
+  apply (Hreset (Cons (x1*x2) ls) x2 zeroes stdin stdout (< END)).
+  repeat bf_step.
 Qed.
