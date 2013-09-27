@@ -85,6 +85,8 @@ Ltac bf_step :=
     | [ |- iter ([ ?b ] ?C, state[?ls, 0, ?rs, ?stdin, ?stdout]) _ ] =>
       apply (iter_step _ (C, state[ls, 0, rs, stdin, stdout]));
         [constructor|]
+    | [ |- iter ?C ?C'] =>
+      apply iter_idem; bf_reflexivity; fail
   end.
 
 Ltac bf_destruct :=

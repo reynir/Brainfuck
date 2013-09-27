@@ -52,9 +52,6 @@ Proof.
   induction y.
   intros.
   repeat bf_step.
-  apply iter_idem.
-  bf_reflexivity.
-  auto using eqst, EqSt_reflex.
 
   intros.
   do 5 bf_step.
@@ -74,10 +71,8 @@ Proof.
   induction x.
   intros.
   repeat bf_step.
-  apply iter_idem.
-  bf_reflexivity.
-  apply minus_n_O.
-  auto using EqSt_reflex, eqst.
+  rewrite <- minus_n_O.
+  bf_step.
 
   intros.
   do 4 bf_step.
@@ -107,10 +102,7 @@ Proof.
   intros ls x.
   induction x.
   intros.
-  bf_step.
-  apply iter_idem.
-  bf_reflexivity.
-  auto using eqst, EqSt_reflex.
+  repeat bf_step.
 
   intros.
   do 8 bf_step.
@@ -129,9 +121,7 @@ Proof.
   intros ls x.
   induction x.
   intros.
-  bf_step.
-  apply iter_idem.
-  bf_reflexivity.
+  repeat bf_step.
   
   intros.
   do 7 bf_step.
@@ -153,9 +143,7 @@ Proof.
   rewrite plus_n_O at 3.
   apply (iter_trans _ ([> + > + < < - END] > > [< < + > > -END]<END,
                        state[ls, x, Cons 0 (Cons 0 zeroes), stdin, stdout])).
-  apply iter_idem.
-  bf_reflexivity.
-  auto using eqst, EqSt_reflex.
+  bf_step.
 
   apply about_dup_lemma1.
   
@@ -169,9 +157,7 @@ Proof.
   repeat bf_step.
   simpl.
   rewrite <- plus_n_O.
-  apply iter_idem.
-  bf_reflexivity.
-  auto using eqst, EqSt_reflex.
+  bf_step.
 Qed.
 
 Definition reset := [-END]END.
@@ -217,9 +203,7 @@ Example mult_example1 :
 Proof.
   unfold mult.
   intros.
-  repeat bf_step; simpl.
-  apply iter_idem.
-  bf_reflexivity; auto using eqst, EqSt_reflex.
+  repeat bf_step.
 Qed.
 
 Example mult_example2 :
@@ -229,9 +213,7 @@ Example mult_example2 :
 Proof.
   unfold mult.
   intros.
-  repeat bf_step; simpl.
-  apply iter_idem.
-  bf_reflexivity; auto using eqst, EqSt_reflex.
+  repeat bf_step.
 Qed.
 
 Example mult_example3 :

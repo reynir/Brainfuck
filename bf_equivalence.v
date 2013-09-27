@@ -53,12 +53,7 @@ Ltac state_reflexivity :=
   match goal with
     | [ |- EqState state[?ls, ?curr, ?rs, ?stdin, ?stdout]
                    state[?ls', ?curr', ?rs', ?stdin', ?stdout'] ] =>
-      apply eqstate; [
-          try apply EqSt_reflex |
-          try reflexivity |
-          try apply EqSt_reflex |
-          try apply EqSt_reflex |
-          try reflexivity ]
+      apply eqstate; auto using EqSt_reflex, eqst
   end.
 
 Notation "s ≡ₛ s'" := (EqState s s') (at level 70, no associativity) : stateeq_scope.
