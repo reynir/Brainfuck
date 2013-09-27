@@ -226,6 +226,57 @@ Proof.
   repeat bf_step.
 Qed.
 
+Theorem about_sequence :
+  forall c c' s s' s'',
+    iter (c, s)
+         (END, s') ->
+    iter (c', s')
+         (END, s'') ->
+    iter (c;c', s)
+         (END, s'').
+Proof.
+  induction c;
+  try (
+      intros;
+      simpl sequence;
+      inversion H; subst;
+      inversion H1; subst;
+      try discriminate H5;
+
+      inversion H1; subst;
+      match goal with
+        | [ H1 : step_rel ?C (?C', ?S) |- ?P ] =>
+          apply (iter_step _ (c;c', S));
+        [constructor |
+         apply (IHc c' S s'); assumption]
+      end).
+  intros.
+  destruct s as [? []].
+  bf_step.
+  apply (IHc2 _ _ s').
+  inversion H; inversion H1; subst.
+  discriminate H7.
+  
+  simpl in H1, H2.
+  assumption.
+  assumption.
+  
+  bf_step.
+  admit.
+  intros.
+  simpl sequence.
+  inversion H; subst.
+  assert ((c', s) ≡ (c', s')) as Hequiv.
+  bf_reflexivity.
+  inversion H1; assumption.
+  apply (iter_injective' (c', s') (c', s) (END, s'')).
+  assumption.
+  apply EqBf_sym; assumption.
+
+  inversion H1.
+Qed.
+
+
 Theorem about_mult :
   forall ls x1 x2 stdin stdout,
     iter (mult, state[Cons x1 ls, x2, zeroes, stdin, stdout])
@@ -388,4 +439,27 @@ Proof.
   apply (iter_trans _ (< END, state[Cons (x1*x2) ls, 0, zeroes, stdin, stdout])).
   apply (Hreset (Cons (x1*x2) ls) x2 zeroes stdin stdout (< END)).
   repeat bf_step.
+Qed.
+
+Corollary add_two_numbers :
+  forall n m stdin,
+    iter (push n; (push m; add), init stdin)
+         (END, state[zeroes, m+n, zeroes, stdin, nil]).
+Proof.
+  unfold init.
+  intros.
+  apply (about_sequence
+           (push n) (push m; add) _
+           state[zeroes, n, zeroes, stdin, nil]).
+  apply (iter_trans _
+                    (END, state[Cons 0 zeroes, n, zeroes, stdin, nil])).
+  apply about_push.
+  bf_step.
+
+  apply (about_sequence
+           (push m) add _
+           state[Cons n zeroes, m, zeroes, stdin, nil]).
+  apply about_push.
+
+  apply about_add.
 Qed.

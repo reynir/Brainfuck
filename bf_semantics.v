@@ -237,6 +237,26 @@ Proof.
   apply (iter_step _ conf'); assumption.
 Qed.
 
+Lemma iter_injective' :
+  forall c1 c2 c3,
+    iter c1 c3 ->
+    c1 ≡ c2 ->
+    iter c2 c3.
+Proof.
+  intros c1 c2 c3 H1 H2.
+  generalize dependent c2.
+  induction H1.
+  eauto using iter_idem, EqBf_trans, EqBf_sym.
+
+  intros c2 H2.
+  pose (step_square_lemma _ _ _ H H2) as Hstep.
+  destruct Hstep.
+  pose (step_rel_EqBf_compat _ _ _ _ H H0 H2) as Hequiv.
+  apply (iter_step _ _ _ H0).
+  apply IHiter.
+  exact Hequiv.
+Qed.
+
 Lemma extend_iter_right :
   forall c c' c'',
     iter c c' ->
