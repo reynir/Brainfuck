@@ -188,3 +188,60 @@ Proof.
   repeat bf_step.
   exact IHcurr.
 Qed.
+
+Definition mult :=
+  (* [...;x1][x2][] Move x1 *)
+  <[> > + < < -END]> >
+  (* [...;0;x2][x1][] *)
+  [<
+   (* [...;i*x2][x2][x1-i] Add and copy x2 *)
+   [< + > > > + < < -END]
+   (* [...;(i+1)*x2][0][x1-i;x2] Move to x2 *)
+   > >
+   (* [...;(i+1)*x2;0;x1-i][x2][] Move back x2 *)
+   [< < + > > -END]<
+   (* [...;(i+1)*x2;x2][x1-i][] Decrement loop counter *)
+   -END
+  (* [...;(i+1)*x2;x2][x1-(i+1)][] *)
+  ]<
+  (* [...;x1*x2][x2][] Cleanup *)
+  reset;
+  <
+  (* [...][x1*x2][] *)
+  END.
+
+Example mult_example1 :
+  forall stdin stdout,
+    iter (mult, state[Cons 2 zeroes, 3, zeroes, stdin, stdout])
+         (END, state[zeroes, 6, zeroes, stdin, stdout]).
+Proof.
+  unfold mult.
+  intros.
+  repeat bf_step; simpl.
+  apply iter_idem.
+  bf_reflexivity; auto using eqst, EqSt_reflex.
+Qed.
+
+Example mult_example2 :
+  forall stdin stdout,
+    iter (mult, state[Cons 0 zeroes, 3, zeroes, stdin, stdout])
+         (END, state[zeroes, 0, zeroes, stdin, stdout]).
+Proof.
+  unfold mult.
+  intros.
+  repeat bf_step; simpl.
+  apply iter_idem.
+  bf_reflexivity; auto using eqst, EqSt_reflex.
+Qed.
+
+Example mult_example3 :
+  forall stdin stdout,
+    iter (mult, state[Cons 2 zeroes, 0, zeroes, stdin, stdout])
+         (END, state[zeroes, 0, zeroes, stdin, stdout]).
+Proof.
+  unfold mult.
+  intros.
+  repeat bf_step; simpl.
+  apply iter_idem.
+  bf_reflexivity; auto using eqst, EqSt_reflex.
+Qed.
