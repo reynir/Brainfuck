@@ -117,7 +117,7 @@ Fixpoint sequence (c c' : Instr.instruction) : Instr.instruction :=
     | END => c'
   end.
 
-Notation "c ';' c'" := (sequence c c') (at level 50, left associativity).
+Notation "c ';' c'" := (sequence c c') (at level 60, right associativity).
 
 Fixpoint step (config : Instr.instruction * state) : option (Instr.instruction * state) :=
   match config with
