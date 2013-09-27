@@ -1,10 +1,16 @@
 Brainfuck
 =========
 
-This is a README that describes the project.
+This is a project where I try to formalize
+[brainfuck](http://en.wikipedia.org/wiki/Brainfuck) in
+[Coq](http://en.wikipedia.org/wiki/Coq).
 
+Goal
+---
 
-
+The goal is to prove properties about brainfuck. I have implemented a compiler
+from simple arithmetic expressions (addition, subtraction and multiplication) to
+brainfuck. This is done by compiling to a stack machine subset of brainfuck.
 
 The hello world example
 -----------------------
@@ -26,3 +32,5 @@ And when `hello_world` is commented out:
     real    0m2.485s
     user    0m2.313s
     sys     0m0.113s
+
+The project's [Github page](https://github.com/reynir/Brainfuck/).
