@@ -9,7 +9,7 @@ Lemma step_None : forall c m,
 Proof.
   intros c m.
   split.
-  intro H; destruct c; simpl in H; try discriminate H.
+  intro H; destruct c; try discriminate.
   reflexivity.
 
   intros; subst; reflexivity.
@@ -24,7 +24,7 @@ Proof.
   intro H.
   destruct H.
   apply step_step_rel in H.
-  inversion H; intro Heq; discriminate Heq.
+  inversion H; discriminate.
   
   intro H.
   destruct c; simpl; eauto.
@@ -115,7 +115,7 @@ Lemma EqBf_decrement :
 Proof.
   intros.
   destruct s as [? []]; destruct s' as [? []];
-  state_reflexivity; inversion H; subst; auto; discriminate H11.
+  state_reflexivity; inversion H; discriminate || auto.
 Qed.
 
 Lemma EqBf_stepRight :
@@ -163,20 +163,18 @@ Lemma step_EqBf_compat :
     conf ≡ conf'' ->
     conf' ≡ conf'''.
 Proof.
-  (* HERE BE DRAGONS! *)
   intros ? ? ? ? H H' ?.
-  destruct conf as [[]]; try discriminate H;
-  injection H; intros;
-  destruct conf'' as [[]];
-  try discriminate H';
-  injection H'; intros;
-  subst;
-  inversion H0; (injection H4 || discriminate H4); intros; subst;
-  try bf_reflexivity;
+  apply step_step_rel in H.
+  apply step_step_rel in H'.
+  inversion H0; subst.
+  inversion H2; subst.
+  inversion H; inversion H'; subst; try discriminate;
+  apply eqbf; try congruence;
   auto using EqBf_increment, EqBf_decrement, EqBf_stepRight,
   EqBf_stepLeft, EqBf_input, EqBf_output.
-  inversion H6; subst; destruct curr'; simpl;
-  bf_reflexivity; assumption.
+  destruct curr'; simpl; [injection H9; auto|].
+  injection H9; intros.
+  f_equal; auto.
 Qed.
 
 Lemma step_rel_EqBf_compat :
@@ -192,35 +190,40 @@ Proof.
   apply step_EqBf_compat; assumption.
 Qed.
 
-Lemma step_square_lemma :
+Lemma step_square_lemma' :
   forall c c' c'',
     step_rel c c' ->
     c ≡ c'' ->
     exists c''',
       step_rel c'' c'''.
 Proof.
-  (* MORE DRAGONS AHEAD! *)
-  intros c c' c'' H.
-  apply step_step_rel in H.
-  destruct c as [[]];
-    try (destruct (step_Some END s);
-         destruct H0;
-         [ exists c'; assumption
-                | reflexivity ]);
-    try (intro H';
-    inversion H'; subst;
-    destruct s as [? []], s' as [? []];
-    match goal with
-        [ H : (_, _) ≡ ?c |- ?P ] =>
-        remember (step c) as my_c;
-        move Heqmy_c after H;
-        simpl in Heqmy_c;
-        match goal with
-            [ Heqmy_c : my_c = Some ?c |- ?P ] =>
-            exists c
-        end
-    end;
-    constructor).
+  intros c c' c'' H H'.
+  destruct c as [i s], c'' as [i'' s''].
+  induction H; rewrite (EqBf_program i'' s'' _ _ (EqBf_sym H')).
+  exists (c, increment s''); constructor.
+  exists (c, decrement s''); constructor.
+  exists (c, stepRight s''); constructor.
+  exists (c, stepLeft s''); constructor.
+  exists (c, input s''); constructor.
+  exists (c, output s''); constructor.
+  destruct s'' as [? []] eqn: Heq.
+  exists (c, s''); rewrite Heq; constructor.
+  exists (b;[b]c, s''); rewrite Heq; constructor.
+Qed.
+
+Lemma step_square_lemma :
+  forall c c' c'',
+    step_rel c c' ->
+    c ≡ c'' ->
+    exists c''',
+      step_rel c'' c''' /\ c' ≡ c'''.
+Proof.
+  intros ? ? ? H H'.
+  destruct (step_square_lemma' _ _ _ H H') as [c''' H''].
+  exists c'''.
+  split.
+  assumption.
+  exact (step_rel_EqBf_compat _ _ _ _ H H'' H').
 Qed.
 
 Lemma iter_injective :
@@ -249,12 +252,10 @@ Proof.
   eauto using iter_idem, EqBf_trans, EqBf_sym.
 
   intros c2 H2.
-  pose (step_square_lemma _ _ _ H H2) as Hstep.
-  destruct Hstep.
-  pose (step_rel_EqBf_compat _ _ _ _ H H0 H2) as Hequiv.
-  apply (iter_step _ _ _ H0).
+  destruct (step_square_lemma' _ _ _ H H2) as [? Hstep].
+  apply (iter_step _ _ _ Hstep).
   apply IHiter.
-  exact Hequiv.
+  exact (step_rel_EqBf_compat _ _ _ _ H Hstep H2).
 Qed.
 
 Lemma extend_iter_right :
@@ -267,10 +268,9 @@ Proof.
   induction H.
   intro H'.
 
-  destruct (step_square_lemma conf' c'' conf H' (EqBf_sym H)).
+  destruct (step_square_lemma conf' c'' conf H' (EqBf_sym H)) as [? [Hstep Hequiv]].
   apply EqBf_sym in H.
-  apply (step_rel_EqBf_compat conf' c'' conf x) in H; try assumption.
-  apply (iter_step _ _ _ H0).
+  apply (iter_step _ _ _ Hstep).
   apply iter_idem.
   apply EqBf_sym.
   assumption.

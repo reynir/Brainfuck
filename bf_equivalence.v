@@ -177,3 +177,12 @@ Proof.
   unfold init.
   bf_reflexivity.
 Qed.
+
+Lemma EqBf_program :
+  forall c s c' s',
+    (c, s) ≡ (c', s') ->
+    c = c'.
+Proof.
+  intros.
+  inversion H; assumption.
+Qed.
