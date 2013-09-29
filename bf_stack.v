@@ -276,7 +276,7 @@ Proof.
   inversion H1.
 Qed.
 
-
+(* This proof is a total mess! *)
 Theorem about_mult :
   forall ls x1 x2 stdin stdout,
     iter (mult, state[Cons x1 ls, x2, zeroes, stdin, stdout])
