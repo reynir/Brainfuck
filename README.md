@@ -12,6 +12,15 @@ The goal is to prove properties about brainfuck. I have implemented a compiler
 from simple arithmetic expressions (addition, subtraction and multiplication) to
 brainfuck. This is done by compiling to a stack machine subset of brainfuck.
 
+Arithmetic expression compiler
+------------------------------
+
+A compiler from simple arithmetic expressions with addition, subtraction and
+multiplication to brainfuck is included in `ae_compiler.v`. The correctness of
+the compiler is proven as well. The idea in the proof is to develop a number of
+stack primitives and show their correctness, and then compile down to those
+stack primitives.
+
 The hello world example
 -----------------------
 
