@@ -3,6 +3,7 @@
 Require Import bf bf_equivalence bf_semantics.
 Require Import Lists.Streams.
 Require Import Arith.Minus Arith.Plus.
+Require Import String Ascii.
 
 Definition option_bind {A B : Set} (f : A -> option B) (x : option A) : option B :=
   match x with
@@ -116,7 +117,15 @@ Definition hello_world :=
   < < + + + + + + + + + + + + + + + → > → + + + → - - - - - - → - - -
   - - - - - → > + → > → END.
 
-Definition hello_world_string := (10 :: 33::100::108::114::111::87::32::111::108::108::101::72::nil)%list.
+Fixpoint natlist_of_string (s : string) : list nat :=
+  match s with
+    | EmptyString => nil%list
+    | String a s' => (nat_of_ascii a :: natlist_of_string s')%list
+  end.
+
+Definition hello_world_string :=
+  let lf := String "010" EmptyString in
+  List.rev (natlist_of_string ("Hello World!" ++ lf)).
 
 Example hello_world_works :
   exists ls n rs,
